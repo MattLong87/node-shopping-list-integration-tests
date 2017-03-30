@@ -180,15 +180,15 @@ describe("Recipes", function(){
   });
 
   //edge case: missing field
-  it("should give a 400 error on POST with missing field", function(){
-    const badRecipe = {name: "test"};
-    return chai.request(app)
-    .post("/recipes")
-    .send(badRecipe)
-    .then(function(res){
-      //res.should.have.status(400);
-    });
-  });
+  // it("should give a 400 error on POST with missing field", function(){
+  //   const badRecipe = {name: "test"};
+  //   return chai.request(app)
+  //   .post("/recipes")
+  //   .send(badRecipe)
+  //   .then(function(res){
+  //     res.should.have.status(400);
+  //   });
+  // });
 
   it("should update a recipe on PUT", function(){
     const updateData = {
