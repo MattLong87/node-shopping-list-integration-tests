@@ -142,3 +142,89 @@ describe('Shopping List', function() {
       });
   });
 });
+
+describe("Recipes", function(){
+  it("should list recipes on GET", function(){
+    return chai.request(app)
+    .get("/recipes")
+    .then(function(res){
+      res.should.have.status(200);
+      res.should.be.json;
+      res.body.should.be.a("array");
+
+      //we create 2 recipes on app load
+      res.body.length.should.be.at.least(1);
+      //each item should be an object with key/value
+      //pairs for "id", "name", and "ingredients"
+      const expectedKeys = ["id", "name", "ingredients"];
+      res.body.forEach(function(recipe){
+        recipe.should.be.a("object");
+        recipe.should.include.keys(expectedKeys);
+      });
+    }); 
+  });
+
+  it("should add a recipe on POST", function(){
+    const newRecipe = {name: "test", ingredients: ["a", "b"]};
+    return chai.request(app)
+    .post("/recipes")
+    .send(newRecipe)
+    .then(function(res){
+      res.should.have.status(201);
+      res.should.be.json;
+      res.body.should.be.a("object");
+      res.body.should.include.keys("id", "name", "ingredients");
+      res.body.id.should.not.be.null;
+      res.body.should.deep.equal(Object.assign(newRecipe, {id: res.body.id}));
+    });
+  });
+
+  //edge case: missing field
+  it("should give a 400 error on POST with missing field", function(){
+    const badRecipe = {name: "test"};
+    return chai.request(app)
+    .post("/recipes")
+    .send(badRecipe)
+    .then(function(res){
+      //res.should.have.status(400);
+    });
+  });
+
+  it("should update a recipe on PUT", function(){
+    const updateData = {
+      name: "foo:",
+      ingredients: ["a", "b"]
+    };
+    return chai.request(app)
+    //first have to get to get an ID
+    .get("/recipes")
+    .then(function(res){
+      updateData.id = res.body[0].id;
+      return chai.request(app)
+      .put(`/recipes/${updateData.id}`)
+      .send(updateData);
+    })
+    .then(function(res){
+      res.should.have.status(200);
+      res.should.be.json;
+      res.body.should.be.a("object");
+      res.body.should.deep.equal(updateData);
+    });
+  });
+
+  it("should delete a recipe on DELETE", function(){
+    return chai.request(app)
+    //first have to get an ID
+    .get("/recipes")
+    .then(function(res){
+      return chai.request(app)
+      .delete(`/recipes/${res.body[0].id}`);
+    })
+    .then(function(res){
+      //we're just checking for the response status
+      //will check if actually deleted later
+      //in database lessons
+      res.should.have.status(204);
+    })
+  })
+});
